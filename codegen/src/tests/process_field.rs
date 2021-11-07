@@ -86,7 +86,14 @@ fn test_field_standard_named() {
                 ident: Some(Ident::new("foo", Span::call_site())),
                 expr:  quote! {{
                     type Args = <Bar as ::xylem::Xylem<::_placeholder_::_Schema_>>::Args;
-                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(_from_placeholder_, __xylem_context, Args { ..::std::default::Default::default() })?
+                    ::xylem::lazy_static! {
+                        static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                    }
+                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(
+                        _from_placeholder_,
+                        __xylem_context,
+                        &*__XYLEM_ARGS,
+                    )?
                 }},
             },
         )],
@@ -107,7 +114,14 @@ fn test_field_standard_unnamed() {
                 ident: None,
                 expr:  quote! {{
                     type Args = <Bar as ::xylem::Xylem<::_placeholder_::_Schema_>>::Args;
-                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(_from_placeholder_, __xylem_context, Args { ..::std::default::Default::default() })?
+                    ::xylem::lazy_static! {
+                        static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                    }
+                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(
+                        _from_placeholder_,
+                        __xylem_context,
+                        &*__XYLEM_ARGS,
+                    )?
                 }},
             },
         )],
@@ -133,7 +147,14 @@ fn test_field_serde() {
                 ident: Some(Ident::new("foo", Span::call_site())),
                 expr:  quote! {{
                     type Args = <Bar as ::xylem::Xylem<::_placeholder_::_Schema_>>::Args;
-                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(_from_placeholder_, __xylem_context, Args { ..::std::default::Default::default() })?
+                    ::xylem::lazy_static! {
+                        static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                    }
+                    ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(
+                        _from_placeholder_,
+                        __xylem_context,
+                        &*__XYLEM_ARGS,
+                    )?
                 }},
             },
         )],
@@ -245,14 +266,17 @@ fn test_field_args() {
                 ident: Some(Ident::new("foo", Span::call_site())),
                 expr:  quote! {{
                     type Args = <Bar as ::xylem::Xylem<::_placeholder_::_Schema_>>::Args;
+                    ::xylem::lazy_static! {
+                        static ref __XYLEM_ARGS: Args = Args {
+                            foo: bar,
+                            qux: corge(1, "waldo"),
+                            ..::std::default::Default::default()
+                        };
+                    }
                     ::xylem::Xylem::<::_placeholder_::_Schema_>::convert(
                         _from_placeholder_,
                         __xylem_context,
-                        Args {
-                            foo: bar,
-                            qux: corge(1, "waldo"),
-                            ..::std::default::Default::default(),
-                        },
+                        &*__XYLEM_ARGS,
                     )?
                 }},
             },

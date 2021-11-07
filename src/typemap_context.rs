@@ -42,17 +42,24 @@ impl Context for DefaultContext {
         debug_assert_eq!(scope.index, self.layers.len(), "Scope mismatch");
     }
 
+    fn nth_last_scope(&self, n: usize) -> Option<TypeId> {
+        self.layers.get(self.layers.len() - n - 1).map(|layer| layer.type_id)
+    }
+
     fn get<T>(&self, scope: TypeId) -> Option<&T>
     where
         T: 'static,
     {
-        let layer = match self.layers.iter().rev().find(|layer| layer.type_id == scope) {
-            Some(layer) => layer,
-            None => {
-                panic!("Attempt to fetch from scope {:?} which is not in the stack", scope)
-            }
-        };
+        let layer = self.layers.iter().rev().find(|layer| layer.type_id == scope)?;
         layer.map.get::<TypeMapKey<T>>()
+    }
+
+    #[inline]
+    fn get_each<T>(&self) -> Box<dyn Iterator<Item = &T> + '_>
+    where
+        T: 'static,
+    {
+        Box::new(self.layers.iter().rev().filter_map(|layer| layer.map.get::<TypeMapKey<T>>()))
     }
 
     fn get_mut<T, F>(&mut self, scope: TypeId, default: F) -> &mut T

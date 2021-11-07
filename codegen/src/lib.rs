@@ -20,8 +20,10 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
     let input_ident = &input.ident;
 
     let mut from_ident = None;
-    let mut schema = syn::parse2::<syn::Type>(quote!(crate::Schema))
-        .expect("Failed to parse literal token stream");
+    let mut schema = Box::new(
+        syn::parse2::<syn::Type>(quote!(crate::Schema))
+            .expect("Failed to parse literal token stream"),
+    );
     let mut expose_from_type = false;
     let mut input_serde = Vec::new();
     let mut derive_list = Vec::new();
@@ -266,7 +268,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
             fn convert_impl(
                 __xylem_from: Self::From,
                 __xylem_context: &mut <#schema as ::xylem::Schema>::Context,
-                _: Self::Args,
+                _: &Self::Args,
             ) -> Result<Self, <#schema as ::xylem::Schema>::Error> {
                 #convert_expr
             }
@@ -308,7 +310,7 @@ enum InputAttr {
     FromIdent(syn::Ident),
     /// Specifies the schema that the conversion is defined for.
     /// The default value is `crate::Schema`.
-    Schema(syn::Type),
+    Schema(Box<syn::Type>),
     /// Exposes the `From` type in the same namespace and visibility as the derive input.
     Expose,
     /// Adds a serde attribute to the `From` type.
@@ -326,7 +328,7 @@ impl Parse for InputAttr {
         } else if ident == "schema" {
             let _: syn::Token![=] = input.parse()?;
             let schema: syn::Type = input.parse()?;
-            Ok(Self::Schema(schema))
+            Ok(Self::Schema(Box::new(schema)))
         } else if ident == "expose" {
             Ok(Self::Expose)
         } else if ident == "serde" {
@@ -536,13 +538,16 @@ fn process_field(
 
                     quote! {{
                         type Args = <#ty as ::xylem::Xylem<#schema>>::Args;
+                        ::xylem::lazy_static! {
+                            static ref __XYLEM_ARGS: Args = Args {
+                                #(#arg_names: #arg_exprs,)*
+                                ..::std::default::Default::default()
+                            };
+                        }
                         ::xylem::Xylem::<#schema>::convert(
                             #from_expr,
                             __xylem_context,
-                            Args {
-                                #(#arg_names: #arg_exprs,)*
-                                ..::std::default::Default::default()
-                            }
+                            &*__XYLEM_ARGS,
                         )?
                     }}
                 },

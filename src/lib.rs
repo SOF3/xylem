@@ -24,12 +24,15 @@
 use std::any::TypeId;
 use std::fmt;
 
+// An internal re-export used for reusing arguments.
+#[doc(hidden)]
+pub use lazy_static::lazy_static;
 pub use xylem_codegen::Xylem;
 
 #[cfg(feature = "id")]
-pub mod id;
+mod id;
 #[cfg(feature = "id")]
-pub use id::Id;
+pub use id::{Id, IdArgs, IdString, Identifiable};
 #[cfg(feature = "ext")]
 mod ext;
 #[cfg(feature = "ext")]
@@ -63,7 +66,7 @@ pub trait Xylem<S: Schema + ?Sized>: Sized + 'static {
     fn convert(
         from: Self::From,
         context: &mut <S as Schema>::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, <S as Schema>::Error> {
         let scope = context.start_scope::<Self>();
         let ret = Self::convert_impl(from, context, args)?;
@@ -75,7 +78,7 @@ pub trait Xylem<S: Schema + ?Sized>: Sized + 'static {
     fn convert_impl(
         from: Self::From,
         context: &mut <S as Schema>::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, <S as Schema>::Error>;
 }
 
@@ -90,7 +93,7 @@ where
     fn convert_impl(
         _: Self::From,
         _: &mut <S as Schema>::Context,
-        _: Self::Args,
+        _: &Self::Args,
     ) -> Result<Self, <S as Schema>::Error> {
         Ok(())
     }
@@ -136,14 +139,23 @@ impl AbstractError for anyhow::Error {
 pub trait Context: Default {
     type Scope;
 
+    /// Gets the nth topmost scope type ID.
+    fn nth_last_scope(&self, n: usize) -> Option<TypeId>;
+
     /// Gets a shared reference to the storage of type `T`
-    /// in the newest layer of `S`.
+    /// in the newest layer of the scope.
     fn get<T>(&self, scope: TypeId) -> Option<&T>
     where
         T: 'static;
 
+    /// Gets a shared reference to the storage of type `T`
+    /// in each layer, from top to bottom, if exists.
+    fn get_each<T>(&self) -> Box<dyn Iterator<Item = &T> + '_>
+    where
+        T: 'static;
+
     /// Gets a mutable reference to the storage of type `T`
-    /// in the newest layer of `S`.
+    /// in the newest layer of the scope.
     fn get_mut<T, F>(&mut self, scope: TypeId, default: F) -> &mut T
     where
         F: FnOnce() -> T,

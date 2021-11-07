@@ -26,7 +26,7 @@ impl<S: BoxSchemaExt, T: Xylem<S>> Xylem<S> for Box<T> {
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         Ok(Box::new(T::convert(*from, context, args)?))
     }
@@ -59,7 +59,7 @@ impl<S: RcSchemaExt, T: Xylem<S>> Xylem<S> for Rc<T> {
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         Ok(Rc::new(T::convert(*from, context, args)?))
     }
@@ -92,7 +92,7 @@ impl<S: ArcSchemaExt, T: Xylem<S>> Xylem<S> for Arc<T> {
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         Ok(Arc::new(T::convert(*from, context, args)?))
     }
@@ -114,7 +114,7 @@ impl<S: OptionSchemaExt, T: Xylem<S>> Xylem<S> for Option<T> {
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         Ok(match from {
             Some(from) => Some(T::convert(from, context, args)?),
@@ -127,22 +127,19 @@ impl<S: OptionSchemaExt, T: Xylem<S>> Xylem<S> for Option<T> {
 ///
 /// This allows `Vec<T>` to be converted from `Vec<T::From>`,
 /// applying the conversion for `T` elementwise.
-/// The argument is cloned for each element.
+/// The argument is passed as-is for each element.
 pub trait VecSchemaExt: Schema {}
 
-impl<S: VecSchemaExt, T: Xylem<S>> Xylem<S> for Vec<T>
-where
-    <T as Xylem<S>>::Args: Default + Clone,
-{
+impl<S: VecSchemaExt, T: Xylem<S>> Xylem<S> for Vec<T> {
     type From = Vec<T::From>;
     type Args = <T as Xylem<S>>::Args;
 
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
-        from.into_iter().map(|item| T::convert(item, context, args.clone())).collect()
+        from.into_iter().map(|item| T::convert(item, context, args)).collect()
     }
 }
 
@@ -152,7 +149,7 @@ impl<T: SchemaExt> VecSchemaExt for T {}
 ///
 /// This allows `HashMap<K, V>` to be converted from `HashMap<K::From, V::From>`,
 /// applying the conversion for `K` for k.
-/// The value argument is cloned for each value.
+/// The value argument is passed as-is for each value.
 /// No conversion arguments can be passed to the key type (the default value is always used).
 pub trait HashMapSchemaExt: Schema {}
 
@@ -160,7 +157,7 @@ impl<S: HashMapSchemaExt, K: Xylem<S>, V: Xylem<S>> Xylem<S> for HashMap<K, V>
 where
     K: Eq + Hash,
     K::From: Eq + Hash,
-    <V as Xylem<S>>::Args: Default + Clone,
+    <V as Xylem<S>>::Args: Default,
 {
     type From = HashMap<K::From, V::From>;
     type Args = <V as Xylem<S>>::Args;
@@ -168,13 +165,13 @@ where
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         from.into_iter()
             .map(|(key, value)| {
                 Ok((
-                    K::convert(key, context, Default::default())?,
-                    V::convert(value, context, args.clone())?,
+                    K::convert(key, context, &Default::default())?,
+                    V::convert(value, context, args)?,
                 ))
             })
             .collect()
@@ -183,12 +180,11 @@ where
 
 impl<T: SchemaExt> HashMapSchemaExt for T {}
 
-
 /// Implement this trait for a schema type to support standard [`HashMap`] conversion.
 ///
 /// This allows `HashMap<K, V>` to be converted from `HashMap<K::From, V::From>`,
 /// applying the conversion for `K` for k.
-/// The value argument is cloned for each value.
+/// The value argument is passed as-is for each value.
 /// No conversion arguments can be passed to the key type (the default value is always used).
 pub trait BTreeMapSchemaExt: Schema {}
 
@@ -196,7 +192,7 @@ impl<S: BTreeMapSchemaExt, K: Xylem<S>, V: Xylem<S>> Xylem<S> for BTreeMap<K, V>
 where
     K: Eq + Ord,
     K::From: Eq + Ord,
-    <V as Xylem<S>>::Args: Default + Clone,
+    <V as Xylem<S>>::Args: Default,
 {
     type From = BTreeMap<K::From, V::From>;
     type Args = <V as Xylem<S>>::Args;
@@ -204,13 +200,13 @@ where
     fn convert_impl(
         from: Self::From,
         context: &mut S::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, S::Error> {
         from.into_iter()
             .map(|(key, value)| {
                 Ok((
-                    K::convert(key, context, Default::default())?,
-                    V::convert(value, context, args.clone())?,
+                    K::convert(key, context, &Default::default())?,
+                    V::convert(value, context, args)?,
                 ))
             })
             .collect()

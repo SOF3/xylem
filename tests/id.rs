@@ -1,5 +1,4 @@
-use xylem::id::Identifiable;
-use xylem::{DefaultContext, Id, NoArgs, SchemaExt, Xylem};
+use xylem::{DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
 
 enum Schema {}
 
@@ -29,13 +28,13 @@ impl Identifiable<Schema> for Foo {
 }
 
 #[test]
-fn test_cross_ref() {
+fn test_ref() {
     let mut context = DefaultContext::default();
 
     let first = Foo::convert(
         FooXylem { id: String::from("first"), other: None, bar: Vec::new() },
         &mut context,
-        NoArgs,
+        &NoArgs,
     )
     .unwrap();
 
@@ -45,7 +44,7 @@ fn test_cross_ref() {
     let second = Foo::convert(
         FooXylem { id: String::from("second"), other: None, bar: Vec::new() },
         &mut context,
-        NoArgs,
+        &NoArgs,
     )
     .unwrap();
 
@@ -59,7 +58,7 @@ fn test_cross_ref() {
             bar:   Vec::new(),
         },
         &mut context,
-        NoArgs,
+        &NoArgs,
     )
     .unwrap();
 
@@ -100,7 +99,7 @@ fn test_scoped_id() {
             ],
         },
         &mut context,
-        NoArgs,
+        &NoArgs,
     )
     .unwrap();
 
@@ -121,48 +120,7 @@ fn test_scoped_id() {
             }],
         },
         &mut context,
-        NoArgs,
-    )
-    .unwrap_err();
-    assert_eq!(second_err.to_string(), "Unknown ID alpha");
-}
-
-#[test]
-fn test_cross_scope_id() {
-    let mut context = DefaultContext::default();
-
-    let first = Foo::convert(
-        FooXylem {
-            id:    String::from("first"),
-            other: None,
-            bar:   vec![
-                BarXylem { id: String::from("alpha"), other: None },
-                BarXylem { id: String::from("beta"), other: Some(String::from("alpha")) },
-            ],
-        },
-        &mut context,
-        NoArgs,
-    )
-    .unwrap();
-
-    assert_eq!(first.bar[0].id.index(), 0);
-    assert_eq!(first.bar[1].id.index(), 1);
-    assert!(match first.bar[1].other {
-        Some(id) => id.index() == 0,
-        None => false,
-    });
-
-    let second_err = Foo::convert(
-        FooXylem {
-            id:    String::from("second"),
-            other: None,
-            bar:   vec![BarXylem {
-                id:    String::from("gamma"),
-                other: Some(String::from("alpha")),
-            }],
-        },
-        &mut context,
-        NoArgs,
+        &NoArgs,
     )
     .unwrap_err();
     assert_eq!(second_err.to_string(), "Unknown ID alpha");

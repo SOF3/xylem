@@ -18,7 +18,7 @@ impl Xylem<Schema> for Vec<i32> {
     fn convert_impl(
         from: Self::From,
         _: &mut DefaultContext,
-        _: Self::Args,
+        _: &Self::Args,
     ) -> Result<Self, anyhow::Error> {
         from.into_iter().map(|item| item.parse().context("Parse error")).collect()
     }

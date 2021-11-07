@@ -45,16 +45,22 @@ fn test_named_struct() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(Self {
                         bar: {
                             type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, &*__XYLEM_ARGS)?
                         },
                         qux: {
                             type Args = <Qux as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
                         },
                     })
                 }
@@ -83,16 +89,22 @@ fn test_tuple_struct() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(Self (
                         {
                             type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.0, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.0, __xylem_context, &*__XYLEM_ARGS)?
                         },
                         {
                             type Args = <Qux as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, &*__XYLEM_ARGS)?
                         },
                     ))
                 }
@@ -118,7 +130,7 @@ fn test_unit_struct() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(Self)
                 }
@@ -150,16 +162,22 @@ fn test_generic_named_struct() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(Self {
                         bar: {
                             type Args = <Bar<T> as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, &*__XYLEM_ARGS)?
                         },
                         qux: {
                             type Args = <Qux<U> as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
                         },
                     })
                 }
@@ -188,16 +206,22 @@ fn test_generic_tuple_struct() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(Self (
                         {
                             type Args = <Bar<T> as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.0, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.0, __xylem_context, &*__XYLEM_ARGS)?
                         },
                         {
                             type Args = <Qux<U> as ::xylem::Xylem<crate::Schema>>::Args;
-                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, Args { ..::std::default::Default::default() })?
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, &*__XYLEM_ARGS)?
                         },
                     ))
                 }
@@ -240,28 +264,40 @@ fn test_enum() {
                 fn convert_impl(
                     __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
-                    _: Self::Args,
+                    _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
                     Ok(match __xylem_from {
                         FooXylem::Bar => Self::Bar,
                         FooXylem::Qux(__field0, __field1) => Self::Qux(
                             {
                                 type Args = <Corge as ::xylem::Xylem<crate::Schema>>::Args;
-                                ::xylem::Xylem::<crate::Schema>::convert(__field0, __xylem_context, Args { ..::std::default::Default::default() })?
+                                ::xylem::lazy_static! {
+                                    static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                                }
+                                ::xylem::Xylem::<crate::Schema>::convert(__field0, __xylem_context, &*__XYLEM_ARGS)?
                             },
                             {
                                 type Args = <Quz as ::xylem::Xylem<crate::Schema>>::Args;
-                                ::xylem::Xylem::<crate::Schema>::convert(__field1, __xylem_context, Args { ..::std::default::Default::default() })?
+                                ::xylem::lazy_static! {
+                                    static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                                }
+                                ::xylem::Xylem::<crate::Schema>::convert(__field1, __xylem_context, &*__XYLEM_ARGS)?
                             },
                         ),
                         FooXylem::Grault { waldo, fred } => Self::Grault {
                             waldo: {
                                 type Args = <Waldo as ::xylem::Xylem<crate::Schema>>::Args;
-                                ::xylem::Xylem::<crate::Schema>::convert(waldo, __xylem_context, Args { ..::std::default::Default::default() })?
+                                ::xylem::lazy_static! {
+                                    static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                                }
+                                ::xylem::Xylem::<crate::Schema>::convert(waldo, __xylem_context, &*__XYLEM_ARGS)?
                             },
                             fred: {
                                 type Args = <Fred as ::xylem::Xylem<crate::Schema>>::Args;
-                                ::xylem::Xylem::<crate::Schema>::convert(fred, __xylem_context, Args { ..::std::default::Default::default() })?
+                                ::xylem::lazy_static! {
+                                    static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                                }
+                                ::xylem::Xylem::<crate::Schema>::convert(fred, __xylem_context, &*__XYLEM_ARGS)?
                             },
                         },
                     })

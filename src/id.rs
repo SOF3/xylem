@@ -75,13 +75,13 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
     fn convert_impl(
         from: Self::From,
         context: &mut <S as Schema>::Context,
-        args: Self::Args,
+        args: &Self::Args,
     ) -> Result<Self, <S as Schema>::Error> {
         let index = {
-            let counter =
-                context.get_mut::<IdCounter<X>, _>(TypeId::of::<X::Scope>(), Default::default);
-
             if args.new {
+                let counter =
+                    context.get_mut::<IdCounter<X>, _>(TypeId::of::<X::Scope>(), Default::default);
+
                 if counter.names.iter().any(|other| other == &from) {
                     return Err(S::Error::new(format_args!("Duplicate ID {}", &from)));
                 }
@@ -93,12 +93,75 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
                 counter.names.push(from.clone());
                 index
             } else {
-                match counter.names.iter().position(|other| other == &from) {
-                    Some(index) => {
-                        index.try_into().expect("More than u32::MAX_VALUE IDs registered")
+                let index = match context.get::<IdCounter<X>>(TypeId::of::<X::Scope>()) {
+                    Some(counter) => {
+                        let index = counter.names.iter().position(|other| other == &from);
+                        match index {
+                            Some(index) => index,
+                            None => {
+                                return Err(S::Error::new(format_args!("Unknown ID {}", &from)))
+                            }
+                        }
                     }
-                    None => return Err(S::Error::new(format_args!("Unknown ID {}", &from))),
+                    None => {
+                        let mut index = None;
+                        for import in context.get_each::<ImportScope>() {
+                            if let Some(id) = import.map.get(&TypeId::of::<X>()) {
+                                let store =
+                                    match context.get::<GlobalIdStore<S, X>>(TypeId::of::<()>()) {
+                                        Some(store) => store,
+                                        None => {
+                                            return Err(S::Error::new(format_args!(
+                                                "Attempted to import scope for {}, but it was not \
+                                                 tracked before. Did you forget to \
+                                                 #[xylem(args(targs = true, track = true))]?",
+                                                type_name::<X>()
+                                            )));
+                                        }
+                                    };
+                                let ids = match store.ids.get(id) {
+                                    Some(ids) => ids,
+                                    None => {
+                                        return Err(S::Error::new(
+                                            "Scope was successfully imported but the ID is not \
+                                             tracked",
+                                        ));
+                                    }
+                                };
+                                index = match ids.iter().position(|id| id == &from) {
+                                    Some(index) => Some(index),
+                                    None => {
+                                        return Err(S::Error::new(format_args!(
+                                            "Unknown ID {}",
+                                            &from
+                                        )))
+                                    }
+                                };
+                                break;
+                            }
+                        }
+
+                        match index {
+                            Some(index) => index,
+                            None => {
+                                return Err(S::Error::new(
+                                    "Use of ID before registering the first one. Did you forget \
+                                     to #[xylem(args(new = true))] and put it as the first field?",
+                                ))
+                            }
+                        }
+                    }
+                };
+
+                let import = context.get_mut::<ImportScope, _>(
+                    context.nth_last_scope(1).expect("Stack too shallow"),
+                    Default::default,
+                );
+                for &imported in &args.import {
+                    import.map.insert(imported, vec![index]); // TODO support imports with more than 2 levels of scopes
                 }
+
+                index.try_into().expect("More than u32::MAX_VALUE IDs registered")
             }
         };
 
@@ -161,6 +224,63 @@ pub struct IdArgs {
     /// This option is only valid when `new` is `true`,
     /// and cannot be used if the type recurses.
     pub track: bool,
+
+    /// Import identifiers whose scope is the object referenced by this identifier.
+    ///
+    /// For example, consider the struct:
+    ///
+    /// ```
+    /// use std::any::TypeId;
+    ///
+    /// use xylem::{Id, Identifiable, Xylem};
+    ///
+    /// # enum Schema {}
+    /// # impl xylem::Schema for Schema {
+    /// #     type Context = xylem::DefaultContext;
+    /// #     type Error = anyhow::Error;
+    /// # }
+    /// # impl xylem::VecSchemaExt for Schema {}
+    ///
+    /// #[derive(Xylem)]
+    /// # #[xylem(schema = Schema)]
+    /// struct Foo {
+    ///     #[xylem(args(import = vec![TypeId::of::<Qux>()]))]
+    ///     bar: Id<Schema, Bar>,
+    ///     qux: Id<Schema, Qux>,
+    /// }
+    ///
+    /// #[derive(Xylem)]
+    /// # #[xylem(schema = Schema)]
+    /// struct Bar {
+    ///     #[xylem(args(new = true))]
+    ///     id:  Id<Schema, Bar>,
+    ///     qux: Vec<Qux>,
+    /// }
+    ///
+    /// impl Identifiable<Schema> for Bar {
+    ///     type Scope = ();
+    ///
+    ///     fn id(&self) -> Id<Schema, Bar> { self.id }
+    /// }
+    ///
+    /// #[derive(Xylem)]
+    /// # #[xylem(schema = Schema)]
+    /// struct Qux {
+    ///     #[xylem(args(new = true, track = true))]
+    ///     id: Id<Schema, Qux>,
+    /// }
+    ///
+    /// impl Identifiable<Schema> for Qux {
+    ///     type Scope = Bar;
+    ///
+    ///     fn id(&self) -> Id<Schema, Qux> { self.id }
+    /// }
+    /// ```
+    ///
+    /// Then `Foo::qux` will be resolved using `Foo::bar` as the scope.
+    /// This imported scope lasts for the rest of the scope of the object declaring this ID,
+    /// i.e. during the conversion of the fields in `Foo` behind `Foo::bar`.
+    pub import: Vec<TypeId>,
 }
 
 /// Retrieves the original string ID for an identifiable object.
@@ -181,7 +301,7 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
     fn convert_impl(
         (): Self::From,
         context: &mut <S as Schema>::Context,
-        _args: Self::Args,
+        _args: &Self::Args,
     ) -> Result<Self, <S as Schema>::Error> {
         let id = match context.get::<CurrentId>(TypeId::of::<X>()) {
             Some(id) => id,
@@ -225,6 +345,11 @@ struct GlobalIdStore<S: Schema, X: Identifiable<S>> {
 
 impl<S: Schema, X: Identifiable<S>> Default for GlobalIdStore<S, X> {
     fn default() -> Self { Self { ids: BTreeMap::new(), _ph: PhantomData } }
+}
+
+#[derive(Default)]
+struct ImportScope {
+    map: BTreeMap<TypeId, Vec<usize>>,
 }
 
 /// A trait for types that can be identified.
