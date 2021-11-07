@@ -6,7 +6,7 @@ edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/SOF3/xylem"
 homepage = "https://github.com/SOF3/xylem"
-readme = "README.md"
+readme = "../README.md"
 description = "Codegen backend for xylem"
 
 [lib]
