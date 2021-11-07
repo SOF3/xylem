@@ -1,9 +1,9 @@
 //! Generates dynamically resolved identifiers.
 
 use core::fmt;
-use std::any::TypeId;
+use std::any::{type_name, TypeId};
 use std::collections::BTreeMap;
-use std::{any::type_name, hash::Hash};
+use std::hash::Hash;
 use std::marker::PhantomData;
 
 use serde::{Deserialize, Serialize};
@@ -72,19 +72,25 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
         args: Self::Args,
     ) -> Result<Self, <S as Schema>::Error> {
         let index = {
-            let counter = context.get_mut::<IdCounter<X>, _>(TypeId::of::<X::Scope>(), Default::default);
+            let counter =
+                context.get_mut::<IdCounter<X>, _>(TypeId::of::<X::Scope>(), Default::default);
 
             if args.new {
                 if counter.names.iter().any(|other| other == &from) {
                     return Err(S::Error::new(format_args!("Duplicate ID {}", &from)));
                 }
-                let index =
-                    counter.names.len().try_into().expect("More than u32::MAX_VALUE IDs registered");
+                let index = counter
+                    .names
+                    .len()
+                    .try_into()
+                    .expect("More than u32::MAX_VALUE IDs registered");
                 counter.names.push(from.clone());
                 index
             } else {
                 match counter.names.iter().position(|other| other == &from) {
-                    Some(index) => index.try_into().expect("More than u32::MAX_VALUE IDs registered"),
+                    Some(index) => {
+                        index.try_into().expect("More than u32::MAX_VALUE IDs registered")
+                    }
                     None => return Err(S::Error::new(format_args!("Unknown ID {}", &from))),
                 }
             }
@@ -96,7 +102,11 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
             let mut new = false;
             let current_id = context.get_mut::<CurrentId, _>(TypeId::of::<X>(), || {
                 new = true;
-                CurrentId { id: id.index(), parent: TypeId::of::<X::Scope>(), string: from.clone() }
+                CurrentId {
+                    id:     id.index(),
+                    parent: TypeId::of::<X::Scope>(),
+                    string: from.clone(),
+                }
             });
             if !new {
                 return Err(S::Error::new(format_args!(
@@ -122,10 +132,9 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
 
                 parent_ids.reverse();
 
-                let store = context.get_mut::<GlobalIdStore<S, X>, _>(TypeId::of::<()>(), Default::default);
-                store.ids.entry(parent_ids)
-                    .or_default()
-                    .push(from);
+                let store =
+                    context.get_mut::<GlobalIdStore<S, X>, _>(TypeId::of::<()>(), Default::default);
+                store.ids.entry(parent_ids).or_default().push(from);
             }
         }
 
@@ -155,13 +164,11 @@ pub struct IdArgs {
 /// Retrieves the original string ID for an identifiable object.
 pub struct IdString<S: Schema, X: Identifiable<S>> {
     value: String,
-    _ph: PhantomData<&'static (S, X)>,
+    _ph:   PhantomData<&'static (S, X)>,
 }
 
 impl<S: Schema, X: Identifiable<S>> IdString<S, X> {
-    pub fn value(&self) -> &str {
-        &self.value
-    }
+    pub fn value(&self) -> &str { &self.value }
 }
 
 impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
@@ -176,7 +183,9 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
     ) -> Result<Self, <S as Schema>::Error> {
         let id = match context.get::<CurrentId>(TypeId::of::<X>()) {
             Some(id) => id,
-            None => return Err(S::Error::new(format_args!("No current ID for {}", type_name::<X>()))),
+            None => {
+                return Err(S::Error::new(format_args!("No current ID for {}", type_name::<X>())))
+            }
         };
 
         Ok(Self { value: id.string.clone(), _ph: PhantomData })
@@ -200,7 +209,7 @@ struct CurrentId {
     /// The index of the current identifier.
     ///
     /// This does not use the `Id` type to avoid type parameters.
-    id: usize,
+    id:     usize,
     /// The type ID of the parent.
     parent: TypeId,
     /// The original string ID.

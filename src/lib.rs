@@ -21,7 +21,8 @@
 //! This avoids [error E0119](https://doc.rust-lang.org/error-index.html#E0119)
 //! due to different conversion rules in different schemas.
 
-use std::{any::TypeId, fmt};
+use std::any::TypeId;
+use std::fmt;
 
 // Reexport used in proc macro.
 #[doc(hidden)]
@@ -143,16 +144,14 @@ pub trait Context: Default {
     /// in the newest layer of `S`.
     fn get<T>(&self, scope: TypeId) -> Option<&T>
     where
-        T: 'static
-        ;
+        T: 'static;
 
     /// Gets a mutable reference to the storage of type `T`
     /// in the newest layer of `S`.
     fn get_mut<T, F>(&mut self, scope: TypeId, default: F) -> &mut T
     where
         F: FnOnce() -> T,
-        T: 'static
-        ;
+        T: 'static;
 
     /// Pushes the type to the scope stack.
     /// Dropping the return value ends the scope.

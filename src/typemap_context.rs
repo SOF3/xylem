@@ -1,4 +1,4 @@
-use std::any::{TypeId};
+use std::any::TypeId;
 use std::marker::PhantomData;
 
 use typemap::TypeMap;
@@ -46,8 +46,7 @@ impl Context for DefaultContext {
     where
         T: 'static,
     {
-        let layer = match self.layers.iter().rev().find(|layer| layer.type_id == scope)
-        {
+        let layer = match self.layers.iter().rev().find(|layer| layer.type_id == scope) {
             Some(layer) => layer,
             None => {
                 panic!("Attempt to fetch from scope {:?} which is not in the stack", scope)
@@ -61,14 +60,10 @@ impl Context for DefaultContext {
         F: FnOnce() -> T,
         T: 'static,
     {
-        let layer =
-            match self.layers.iter_mut().rev().find(|layer| layer.type_id == scope) {
-                Some(layer) => layer,
-                None => panic!(
-                    "Attempt to fetch from scope {:?} which is not in the stack",
-                    scope,
-                ),
-            };
+        let layer = match self.layers.iter_mut().rev().find(|layer| layer.type_id == scope) {
+            Some(layer) => layer,
+            None => panic!("Attempt to fetch from scope {:?} which is not in the stack", scope,),
+        };
         layer.map.entry::<TypeMapKey<T>>().or_insert_with(default)
     }
 }
