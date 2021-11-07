@@ -27,7 +27,6 @@ use std::fmt;
 // Reexport used in proc macro.
 #[doc(hidden)]
 pub use serde;
-use serde::de::DeserializeOwned;
 pub use xylem_codegen::Xylem;
 
 #[cfg(feature = "id")]
@@ -42,7 +41,7 @@ pub use ext::*;
 /// Implementors of this trait have a special conversion rule under the schema `Schema`.
 pub trait Xylem<S: Schema + ?Sized>: Sized + 'static {
     /// The type to convert from.
-    type From: DeserializeOwned + Sized;
+    type From: Sized;
 
     /// The args provided in the field.
     ///
