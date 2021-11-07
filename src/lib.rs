@@ -178,3 +178,30 @@ pub struct NoArgs;
 pub mod typemap_context;
 #[cfg(feature = "typemap")]
 pub use typemap_context::DefaultContext;
+
+/// Declare a normal schema type.
+///
+/// # Example
+/// ```
+/// xylem::declare_schema!(MySchema);
+///
+/// #[derive(xylem::Xylem)]
+/// #[xylem(schema = MySchema)]
+/// struct Foo {}
+/// ```
+#[macro_export]
+macro_rules! declare_schema {
+    ($(#[$meta:meta])* $vis:vis $name:ident $(: $($traits:path),+)?) => {
+        $(#[$meta])*
+        $vis enum $name {}
+
+        impl $crate::Schema for $name {
+            type Context = $crate::DefaultContext;
+            type Error = anyhow::Error;
+        }
+
+        $($(
+            impl $traits for $name {}
+        )*)?
+    }
+}
