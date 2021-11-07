@@ -16,14 +16,14 @@ readme = "README.md"
 description = "Building context-sensitive type conversion"
 
 [dependencies]
-serde = {version = "1.0.130", features = ["derive"]} # derive required in `id` and `codegen`
+serde = {version = "1.0.130", features = ["derive"], optional = true} # derive required in `id` and `codegen`
 typemap = {version = "0.3.3", optional = true}
 xylem-codegen = {version = "0.1.0", path = "./codegen"}
 anyhow = {version = "1.0.45", optional = true}
 
 [features]
-default = ["id", "ext", "anyhow"]
-id = ["typemap"]
+default = ["id", "ext", "typemap", "anyhow"]
+id = []
 ext = []
 
 [dev-dependencies]

@@ -24,9 +24,6 @@
 use std::any::TypeId;
 use std::fmt;
 
-// Reexport used in proc macro.
-#[doc(hidden)]
-pub use serde;
 pub use xylem_codegen::Xylem;
 
 #[cfg(feature = "id")]

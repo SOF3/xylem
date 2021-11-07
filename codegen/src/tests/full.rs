@@ -33,7 +33,6 @@ fn test_named_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             struct FooXylem {
                 bar: <Bar as ::xylem::Xylem<crate::Schema>>::From,
                 qux: <Qux as ::xylem::Xylem<crate::Schema>>::From,
@@ -72,7 +71,6 @@ fn test_tuple_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             struct FooXylem(
                 <Bar as ::xylem::Xylem<crate::Schema>>::From,
                 <Qux as ::xylem::Xylem<crate::Schema>>::From,
@@ -111,7 +109,6 @@ fn test_unit_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             struct FooXylem;
         },
         quote! {
@@ -141,7 +138,6 @@ fn test_generic_named_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             struct FooXylem<T: U, U> where U: Corge<T> {
                 bar: <Bar<T> as ::xylem::Xylem<crate::Schema>>::From,
                 qux: <Qux<U> as ::xylem::Xylem<crate::Schema>>::From,
@@ -180,7 +176,6 @@ fn test_generic_tuple_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             struct FooXylem<T: U, U>(
                 <Bar<T> as ::xylem::Xylem<crate::Schema>>::From,
                 <Qux<U> as ::xylem::Xylem<crate::Schema>>::From,
@@ -226,7 +221,6 @@ fn test_enum() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
-            #[derive(::xylem::serde::Deserialize)]
             enum FooXylem {
                 Bar,
                 Qux(

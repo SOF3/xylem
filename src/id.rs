@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 use std::marker::PhantomData;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::{AbstractError, Context, Schema, Xylem};
@@ -13,7 +14,7 @@ use crate::{AbstractError, Context, Schema, Xylem};
 /// An identifier for type `X`.
 ///
 /// The `Id` type works by ensuring
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Id<S: Schema, X: Identifiable<S>> {
     index: u32, // `usize` is avoided due to unclear serialization format.
     _ph:   PhantomData<&'static (S, X)>,
@@ -121,11 +122,7 @@ impl<S: Schema, X: Identifiable<S>> Xylem<S> for Id<S, X> {
                 let mut parent_ids = Vec::new();
 
                 let mut next_parent = TypeId::of::<X::Scope>();
-                loop {
-                    let parent_id = match context.get::<CurrentId>(next_parent) {
-                        Some(parent_id) => parent_id,
-                        None => break,
-                    };
+                while let Some(parent_id) = context.get::<CurrentId>(next_parent) {
                     parent_ids.push(parent_id.id);
                     next_parent = parent_id.parent;
                 }

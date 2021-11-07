@@ -25,7 +25,6 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
     let mut expose_from_type = false;
     let mut input_serde = Vec::new();
     let mut derive_list = Vec::new();
-    let mut derive_deserialize = true;
 
     for attr in &input.attrs {
         if attr.path.is_ident("xylem") {
@@ -38,17 +37,9 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                     InputAttr::Expose => expose_from_type = true,
                     InputAttr::Derive(macros) => derive_list.extend(macros),
                     InputAttr::Serde(ts) => input_serde.push(quote!(#[serde(#ts)])),
-                    InputAttr::SkipDeserialize => derive_deserialize = false,
                 }
             }
         }
-    }
-
-    if derive_deserialize {
-        derive_list.push(
-            syn::parse2(quote!(::xylem::serde::Deserialize))
-                .expect("Failed to parse literal TokenStream"),
-        );
     }
 
     let from_ident = from_ident.unwrap_or_else(|| format_ident!("{}Xylem", &input.ident));
@@ -80,6 +71,10 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
             (quote!(<#(#decl),*>), quote!(#(#decl),*), quote!(<#(#usage),*>), quote!(#(#usage),*))
         };
     let generics_where = &input.generics.where_clause;
+
+    let derive = (!derive_list.is_empty()).then(|| quote! {
+        #[derive(#(#derive_list),*)]
+    });
 
     let (from_decl, convert_expr) = match &input.data {
         syn::Data::Struct(data) => {
@@ -114,7 +109,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 syn::Fields::Named(_) => (
                     quote! {
                         #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #[derive(#(#derive_list),*)]
+                        #derive
                         #vis struct #from_ident #generics_decl #generics_where {
                             #(
                                 #field_froms_attrs
@@ -134,7 +129,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 syn::Fields::Unnamed(_) => (
                     quote! {
                         #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #[derive(#(#derive_list),*)]
+                        #derive
                         #vis struct #from_ident #generics_decl (
                             #(#field_froms_attrs #field_froms_ty,)*
                         ) #generics_where;
@@ -148,7 +143,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 syn::Fields::Unit => (
                     quote! {
                         #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #[derive(#(#derive_list),*)]
+                        #derive
                         #vis struct #from_ident;
                     },
                     quote! {
@@ -244,7 +239,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
             (
                 quote! {
                     #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                    #[derive(#(#derive_list),*)]
+                    #derive
                     #vis enum #from_ident #generics_decl #generics_where {
                         #(#variant_froms),*
                     }
@@ -318,8 +313,6 @@ enum InputAttr {
     Serde(TokenStream),
     /// Adds a derive macro to the `From` type.
     Derive(Punctuated<syn::Path, syn::Token![,]>),
-    /// Skips the `Deserialize` derive macro.
-    SkipDeserialize,
 }
 
 impl Parse for InputAttr {
@@ -342,8 +335,6 @@ impl Parse for InputAttr {
             let inner;
             syn::parenthesized!(inner in input);
             Ok(Self::Derive(Punctuated::parse_terminated(&inner)?))
-        } else if ident == "skip_deserialize" {
-            Ok(Self::SkipDeserialize)
         } else {
             Err(Error::new_spanned(ident, "Unsupported attribute"))
         }
