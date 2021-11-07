@@ -30,6 +30,11 @@ impl<S: Schema, X: Identifiable<S>> Id<S, X> {
     pub fn index(&self) -> usize { self.index.try_into().expect("Too many identifiers") }
 }
 
+// We need to manually implement these traits because
+// the builtin derive macros generate implementations
+// bounded by the type parameters `S` and `X`,
+// which are just used for type system hacks in our use case.
+
 impl<S: Schema, X: Identifiable<S>> fmt::Debug for Id<S, X> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "Id({})", self.index) }
 }

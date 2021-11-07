@@ -3,7 +3,7 @@
 //! To be specific, xylem is used in the case where
 //! some data are more efficiently represented during runtime as the type `T`,
 //! but they are loaded from configuration files as the type `U`.
-//! `S` is deserialized with [`serde`] directly,
+//! `S` is deserialized with serde directly,
 //! but the conversion from `U` to `T` is stateful in the nested types.
 //! In this case, we implement `T: xylem::Xylem<From = U>`.
 //!
