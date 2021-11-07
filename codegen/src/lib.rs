@@ -72,8 +72,10 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
         };
     let generics_where = &input.generics.where_clause;
 
-    let derive = (!derive_list.is_empty()).then(|| quote! {
-        #[derive(#(#derive_list),*)]
+    let derive = (!derive_list.is_empty()).then(|| {
+        quote! {
+            #[derive(#(#derive_list),*)]
+        }
     });
 
     let (from_decl, convert_expr) = match &input.data {
