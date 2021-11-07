@@ -1,0 +1,21 @@
+[package]
+name = "xylem-codegen"
+version = "0.1.0"
+authors = ["SOFe <sofe2038@gmail.com>"]
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/SOF3/xylem"
+homepage = "https://github.com/SOF3/xylem"
+readme = "README.md"
+description = "Codegen backend for xylem"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.32"
+quote = "1.0.10"
+syn = {version = "1.0.81", features = ["parsing"]}
+
+[dev-dependencies]
+syn = {version = "1.0.81", features = ["full"]}
