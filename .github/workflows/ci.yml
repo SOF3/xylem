@@ -12,7 +12,7 @@ jobs:
         with:
           toolchain: nightly
           profile: default
-      - run: cargo fmt --all -- --check
+      - run: cargo +nightly fmt --all -- --check
   lint:
     name: clippy lint
     runs-on: ubuntu-latest
@@ -32,8 +32,11 @@ jobs:
           toolchain: ${{matrix.toolchain}}
           profile: default
           default: true
-      - name: cargo clippy
-        run: "cargo clippy --all ${{matrix.stability}}"
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          args: --all ${{matrix.stability}}
+          name: debug${{matrix.stability}}
   test:
     name: unit tests
     runs-on: ubuntu-latest
