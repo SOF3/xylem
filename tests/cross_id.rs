@@ -1,19 +1,11 @@
 use std::any::TypeId;
 
-use xylem::{DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
+use xylem::{declare_schema, DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
 
-enum Schema {}
-
-impl xylem::Schema for Schema {
-    type Context = DefaultContext;
-
-    type Error = anyhow::Error;
-}
-
-impl SchemaExt for Schema {}
+declare_schema!(Schema: SchemaExt);
 
 #[derive(Xylem)]
-#[xylem(expose)]
+#[xylem(expose = FooFrom)]
 struct Foo {
     #[xylem(args(import = vec![TypeId::of::<Qux>()]))]
     bar: Id<Schema, Bar>,
@@ -21,7 +13,7 @@ struct Foo {
 }
 
 #[derive(Xylem)]
-#[xylem(expose)]
+#[xylem(expose = BarFrom)]
 struct Bar {
     #[xylem(args(new = true))]
     id:  Id<Schema, Bar>,
@@ -35,7 +27,7 @@ impl Identifiable<Schema> for Bar {
 }
 
 #[derive(Xylem)]
-#[xylem(expose)]
+#[xylem(expose = QuxFrom)]
 struct Qux {
     #[xylem(args(new = true, track = true))]
     id: Id<Schema, Qux>,
@@ -51,9 +43,9 @@ fn test_cross_ref() {
     let mut context = DefaultContext::default();
 
     Bar::convert(
-        BarXylem {
+        BarFrom {
             id:  String::from("one"),
-            qux: vec![QuxXylem { id: String::from("two") }, QuxXylem { id: String::from("three") }],
+            qux: vec![QuxFrom { id: String::from("two") }, QuxFrom { id: String::from("three") }],
         },
         &mut context,
         &NoArgs,
@@ -61,7 +53,7 @@ fn test_cross_ref() {
     .unwrap();
 
     let foo = Foo::convert(
-        FooXylem { bar: String::from("one"), qux: String::from("three") },
+        FooFrom { bar: String::from("one"), qux: String::from("three") },
         &mut context,
         &NoArgs,
     )

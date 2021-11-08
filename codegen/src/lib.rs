@@ -34,9 +34,11 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 attr.parse_args_with(Punctuated::parse_terminated)?;
             for attr in attr_list {
                 match attr {
-                    InputAttr::FromIdent(ident) => from_ident = Some(ident),
+                    InputAttr::Expose(ident) => {
+                        expose_from_type = true;
+                        from_ident = Some(ident);
+                    }
                     InputAttr::Schema(new_schema) => schema = new_schema,
-                    InputAttr::Expose => expose_from_type = true,
                     InputAttr::Derive(macros) => derive_list.extend(macros),
                     InputAttr::Serde(ts) => input_serde.push(quote!(#[serde(#ts)])),
                 }
@@ -306,13 +308,12 @@ impl Output {
 }
 
 enum InputAttr {
-    /// Specifies the identifier to use for the `From` type.
-    FromIdent(syn::Ident),
+    /// Exposes the `From` type in the same namespace and visibility as the derive input
+    /// using the specified identifier as the type name.
+    Expose(syn::Ident),
     /// Specifies the schema that the conversion is defined for.
     /// The default value is `crate::Schema`.
     Schema(Box<syn::Type>),
-    /// Exposes the `From` type in the same namespace and visibility as the derive input.
-    Expose,
     /// Adds a serde attribute to the `From` type.
     Serde(TokenStream),
     /// Adds a derive macro to the `From` type.
@@ -322,15 +323,13 @@ enum InputAttr {
 impl Parse for InputAttr {
     fn parse(input: ParseStream) -> Result<Self> {
         let ident: syn::Ident = input.parse()?;
-        if ident == "from" {
+        if ident == "expose" {
             let _: syn::Token![=] = input.parse()?;
-            Ok(Self::FromIdent(input.parse()?))
+            Ok(Self::Expose(input.parse()?))
         } else if ident == "schema" {
             let _: syn::Token![=] = input.parse()?;
             let schema: syn::Type = input.parse()?;
             Ok(Self::Schema(Box::new(schema)))
-        } else if ident == "expose" {
-            Ok(Self::Expose)
         } else if ident == "serde" {
             let inner;
             syn::parenthesized!(inner in input);

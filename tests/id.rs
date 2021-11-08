@@ -1,30 +1,22 @@
-use xylem::{DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
+use xylem::{declare_schema, DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
 
-enum Schema {}
-
-impl xylem::Schema for Schema {
-    type Context = DefaultContext;
-
-    type Error = anyhow::Error;
-}
-
-impl SchemaExt for Schema {}
+declare_schema!(MySchema: SchemaExt);
 
 // Test for cross-referencing IDs
 
-#[derive(Debug, xylem::Xylem)]
-#[xylem(expose)]
+#[derive(Debug, Xylem)]
+#[xylem(schema = MySchema, expose = FooFrom)]
 struct Foo {
     #[xylem(args(new = true))]
-    id:    Id<Schema, Foo>,
-    other: Option<Id<Schema, Foo>>,
+    id:    Id<MySchema, Foo>,
+    other: Option<Id<MySchema, Foo>>,
     bar:   Vec<Bar>,
 }
 
-impl Identifiable<Schema> for Foo {
+impl Identifiable<MySchema> for Foo {
     type Scope = ();
 
-    fn id(&self) -> Id<Schema, Self> { self.id }
+    fn id(&self) -> Id<MySchema, Self> { self.id }
 }
 
 #[test]
@@ -32,7 +24,7 @@ fn test_ref() {
     let mut context = DefaultContext::default();
 
     let first = Foo::convert(
-        FooXylem { id: String::from("first"), other: None, bar: Vec::new() },
+        FooFrom { id: String::from("first"), other: None, bar: Vec::new() },
         &mut context,
         &NoArgs,
     )
@@ -42,7 +34,7 @@ fn test_ref() {
     assert!(first.other.is_none());
 
     let second = Foo::convert(
-        FooXylem { id: String::from("second"), other: None, bar: Vec::new() },
+        FooFrom { id: String::from("second"), other: None, bar: Vec::new() },
         &mut context,
         &NoArgs,
     )
@@ -52,7 +44,7 @@ fn test_ref() {
     assert!(second.other.is_none());
 
     let third = Foo::convert(
-        FooXylem {
+        FooFrom {
             id:    String::from("third"),
             other: Some(String::from("first")),
             bar:   Vec::new(),
@@ -71,18 +63,18 @@ fn test_ref() {
 
 // Test for scoped IDs
 
-#[derive(Debug, xylem::Xylem)]
-#[xylem(expose)]
+#[derive(Debug, Xylem)]
+#[xylem(schema = MySchema, expose = BarFrom)]
 struct Bar {
     #[xylem(args(new = true))]
-    id:    Id<Schema, Bar>,
-    other: Option<Id<Schema, Bar>>,
+    id:    Id<MySchema, Bar>,
+    other: Option<Id<MySchema, Bar>>,
 }
 
-impl Identifiable<Schema> for Bar {
+impl Identifiable<MySchema> for Bar {
     type Scope = Foo;
 
-    fn id(&self) -> Id<Schema, Self> { self.id }
+    fn id(&self) -> Id<MySchema, Self> { self.id }
 }
 
 #[test]
@@ -90,12 +82,12 @@ fn test_scoped_id() {
     let mut context = DefaultContext::default();
 
     let first = Foo::convert(
-        FooXylem {
+        FooFrom {
             id:    String::from("first"),
             other: None,
             bar:   vec![
-                BarXylem { id: String::from("alpha"), other: None },
-                BarXylem { id: String::from("beta"), other: Some(String::from("alpha")) },
+                BarFrom { id: String::from("alpha"), other: None },
+                BarFrom { id: String::from("beta"), other: Some(String::from("alpha")) },
             ],
         },
         &mut context,
@@ -111,10 +103,10 @@ fn test_scoped_id() {
     });
 
     let second_err = Foo::convert(
-        FooXylem {
+        FooFrom {
             id:    String::from("second"),
             other: None,
-            bar:   vec![BarXylem {
+            bar:   vec![BarFrom {
                 id:    String::from("gamma"),
                 other: Some(String::from("alpha")),
             }],

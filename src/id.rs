@@ -227,7 +227,7 @@ pub struct IdArgs {
 
     /// Import identifiers whose scope is the object referenced by this identifier.
     ///
-    /// For example, consider the struct:
+    /// # Example
     ///
     /// ```
     /// use std::any::TypeId;
