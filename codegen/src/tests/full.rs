@@ -33,21 +33,23 @@ fn test_named_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             struct FooXylem {
                 bar: <Bar as ::xylem::Xylem<crate::Schema>>::From,
                 qux: <Qux as ::xylem::Xylem<crate::Schema>>::From,
             }
         },
         quote! {
+            #[automatically_derived]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(Self {
+                    let mut __xylem_ret = Self {
                         bar: {
                             type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
                             ::xylem::lazy_static! {
@@ -62,7 +64,8 @@ fn test_named_struct() {
                             }
                             ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
                         },
-                    })
+                    };
+                    Ok(__xylem_ret)
                 }
             }
         },
@@ -77,21 +80,23 @@ fn test_tuple_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             struct FooXylem(
                 <Bar as ::xylem::Xylem<crate::Schema>>::From,
                 <Qux as ::xylem::Xylem<crate::Schema>>::From,
             );
         },
         quote! {
+            #[automatically_derived]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(Self (
+                    let mut __xylem_ret = Self (
                         {
                             type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
                             ::xylem::lazy_static! {
@@ -106,7 +111,8 @@ fn test_tuple_struct() {
                             }
                             ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, &*__XYLEM_ARGS)?
                         },
-                    ))
+                    );
+                    Ok(__xylem_ret)
                 }
             }
         },
@@ -121,18 +127,21 @@ fn test_unit_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             struct FooXylem;
         },
         quote! {
+            #[automatically_derived]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(Self)
+                    let mut __xylem_ret = Self;
+                    Ok(__xylem_ret)
                 }
             }
         },
@@ -150,21 +159,23 @@ fn test_generic_named_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             struct FooXylem<T: U, U> where U: Corge<T> {
                 bar: <Bar<T> as ::xylem::Xylem<crate::Schema>>::From,
                 qux: <Qux<U> as ::xylem::Xylem<crate::Schema>>::From,
             }
         },
         quote! {
+            #[automatically_derived]
             impl<T: U, U> ::xylem::Xylem<crate::Schema> for Foo<T, U> {
                 type From = FooXylem<T, U>;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(Self {
+                    let mut __xylem_ret = Self {
                         bar: {
                             type Args = <Bar<T> as ::xylem::Xylem<crate::Schema>>::Args;
                             ::xylem::lazy_static! {
@@ -179,7 +190,8 @@ fn test_generic_named_struct() {
                             }
                             ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
                         },
-                    })
+                    };
+                    Ok(__xylem_ret)
                 }
             }
         },
@@ -194,21 +206,23 @@ fn test_generic_tuple_struct() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             struct FooXylem<T: U, U>(
                 <Bar<T> as ::xylem::Xylem<crate::Schema>>::From,
                 <Qux<U> as ::xylem::Xylem<crate::Schema>>::From,
             ) where U: Corge<T>;
         },
         quote! {
+            #[automatically_derived]
             impl<T: U, U> ::xylem::Xylem<crate::Schema> for Foo<T, U> {
                 type From = FooXylem<T, U>;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(Self (
+                    let mut __xylem_ret = Self (
                         {
                             type Args = <Bar<T> as ::xylem::Xylem<crate::Schema>>::Args;
                             ::xylem::lazy_static! {
@@ -223,7 +237,8 @@ fn test_generic_tuple_struct() {
                             }
                             ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.1, __xylem_context, &*__XYLEM_ARGS)?
                         },
-                    ))
+                    );
+                    Ok(__xylem_ret)
                 }
             }
         },
@@ -245,6 +260,7 @@ fn test_enum() {
         },
         quote! {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
             enum FooXylem {
                 Bar,
                 Qux(
@@ -258,15 +274,16 @@ fn test_enum() {
             }
         },
         quote! {
+            #[automatically_derived]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
                 fn convert_impl(
-                    __xylem_from: Self::From,
+                    mut __xylem_from: Self::From,
                     __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
                     _: &Self::Args,
                 ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
-                    Ok(match __xylem_from {
+                    let mut __xylem_ret = match __xylem_from {
                         FooXylem::Bar => Self::Bar,
                         FooXylem::Qux(__field0, __field1) => Self::Qux(
                             {
@@ -300,7 +317,61 @@ fn test_enum() {
                                 ::xylem::Xylem::<crate::Schema>::convert(fred, __xylem_context, &*__XYLEM_ARGS)?
                             },
                         },
-                    })
+                    };
+                    Ok(__xylem_ret)
+                }
+            }
+        },
+    );
+}
+
+#[test]
+fn test_processable() {
+    test_ok(
+        quote! {
+            #[xylem(process)]
+            struct Foo {
+                bar: Bar,
+                qux: Qux,
+            }
+        },
+        quote! {
+            #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
+            struct FooXylem {
+                bar: <Bar as ::xylem::Xylem<crate::Schema>>::From,
+                qux: <Qux as ::xylem::Xylem<crate::Schema>>::From,
+            }
+        },
+        quote! {
+            #[automatically_derived]
+            impl ::xylem::Xylem<crate::Schema> for Foo {
+                type From = FooXylem;
+                type Args = ::xylem::NoArgs;
+                fn convert_impl(
+                    mut __xylem_from: Self::From,
+                    __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
+                    _: &Self::Args,
+                ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
+                    <Self as ::xylem::Processable<crate::Schema>>::preprocess(&mut __xylem_from, __xylem_context)?;
+                    let mut __xylem_ret = Self {
+                        bar: {
+                            type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, &*__XYLEM_ARGS)?
+                        },
+                        qux: {
+                            type Args = <Qux as ::xylem::Xylem<crate::Schema>>::Args;
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
+                        },
+                    };
+                    <Self as ::xylem::Processable<crate::Schema>>::postprocess(&mut __xylem_ret, __xylem_context)?;
+                    Ok(__xylem_ret)
                 }
             }
         },

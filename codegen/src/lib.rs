@@ -28,6 +28,8 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
     let mut input_serde = Vec::new();
     let mut derive_list = Vec::new();
 
+    let mut processable = false;
+
     for attr in &input.attrs {
         if attr.path.is_ident("xylem") {
             let attr_list: Punctuated<InputAttr, syn::Token![,]> =
@@ -41,10 +43,16 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                     InputAttr::Schema(new_schema) => schema = new_schema,
                     InputAttr::Derive(macros) => derive_list.extend(macros),
                     InputAttr::Serde(ts) => input_serde.push(quote!(#[serde(#ts)])),
+                    InputAttr::Process => {
+                        processable = true;
+                    }
                 }
             }
         }
     }
+
+    let preprocess = processable.then(|| quote!(<Self as ::xylem::Processable<#schema>>::preprocess(&mut __xylem_from, __xylem_context)?;));
+    let postprocess = processable.then(|| quote!(<Self as ::xylem::Processable<#schema>>::postprocess(&mut __xylem_ret, __xylem_context)?;));
 
     let from_ident = from_ident.unwrap_or_else(|| format_ident!("{}Xylem", &input.ident));
 
@@ -82,6 +90,12 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
         }
     });
 
+    let prefix = quote! {
+        #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
+        #[automatically_derived]
+        #derive
+    };
+
     let (from_decl, convert_expr) = match &input.data {
         syn::Data::Struct(data) => {
             let mut field_froms = Vec::new();
@@ -114,8 +128,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
             match &data.fields {
                 syn::Fields::Named(_) => (
                     quote! {
-                        #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #derive
+                        #prefix
                         #vis struct #from_ident #generics_decl #generics_where {
                             #(
                                 #field_froms_attrs
@@ -124,36 +137,34 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                         }
                     },
                     quote! {
-                        Ok(Self {
+                        Self {
                             #(
                                 #field_froms_attrs
                                 #field_convs_ident: #field_convs_expr,
                             )*
-                        })
+                        }
                     },
                 ),
                 syn::Fields::Unnamed(_) => (
                     quote! {
-                        #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #derive
+                        #prefix
                         #vis struct #from_ident #generics_decl (
                             #(#field_froms_attrs #field_froms_ty,)*
                         ) #generics_where;
                     },
                     quote! {
-                        Ok(Self (
+                        Self (
                             #(#field_convs_expr,)*
-                        ))
+                             )
                     },
                 ),
                 syn::Fields::Unit => (
                     quote! {
-                        #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                        #derive
+                        #prefix
                         #vis struct #from_ident;
                     },
                     quote! {
-                        Ok(Self)
+                        Self
                     },
                 ),
             }
@@ -244,16 +255,15 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
 
             (
                 quote! {
-                    #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
-                    #derive
+                    #prefix
                     #vis enum #from_ident #generics_decl #generics_where {
                         #(#variant_froms),*
                     }
                 },
                 quote! {
-                    Ok(match __xylem_from {
+                    match __xylem_from {
                         #(#variant_matches),*
-                    })
+                    }
                 },
             )
         }
@@ -263,16 +273,20 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
     };
 
     let xylem_impl = quote! {
+        #[automatically_derived]
         impl #generics_decl ::xylem::Xylem<#schema> for #input_ident #generics_usage {
             type From = #from_ident #generics_usage;
             type Args = ::xylem::NoArgs;
 
             fn convert_impl(
-                __xylem_from: Self::From,
+                mut __xylem_from: Self::From,
                 __xylem_context: &mut <#schema as ::xylem::Schema>::Context,
                 _: &Self::Args,
             ) -> Result<Self, <#schema as ::xylem::Schema>::Error> {
-                #convert_expr
+                #preprocess
+                let mut __xylem_ret = #convert_expr;
+                #postprocess
+                Ok(__xylem_ret)
             }
         }
     };
@@ -318,6 +332,8 @@ enum InputAttr {
     Serde(TokenStream),
     /// Adds a derive macro to the `From` type.
     Derive(Punctuated<syn::Path, syn::Token![,]>),
+    /// Call [`Processable`].
+    Process,
 }
 
 impl Parse for InputAttr {
@@ -338,6 +354,8 @@ impl Parse for InputAttr {
             let inner;
             syn::parenthesized!(inner in input);
             Ok(Self::Derive(Punctuated::parse_terminated(&inner)?))
+        } else if ident == "process" {
+            Ok(Self::Process)
         } else {
             Err(Error::new_spanned(ident, "Unsupported attribute"))
         }

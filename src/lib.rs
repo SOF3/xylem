@@ -156,6 +156,12 @@ pub use lazy_static::lazy_static;
 /// ## `#[xylem(derive(Foo, Bar))]`
 /// Apply the derive macros `Foo`, `Bar` on the derived type.
 ///
+/// ## `#[xylem(process)]`
+/// Call [`Processable::preprocess`] before conversion,
+/// call [`Processable::postprocess`] after conversion.
+///
+/// Requires the input type to implement the [`Processable`] trait.
+///
 /// # Field Attributes
 /// The following attributes can be applied on the fields in the input.
 /// As above, "input field" refers to the field written by the user manually,
@@ -285,6 +291,17 @@ where
     ) -> Result<Self, <S as Schema>::Error> {
         Ok(())
     }
+}
+
+/// Preprocessor and postprocessor extensions for [`Xylem`].
+pub trait Processable<S: Schema + ?Sized>: Xylem<S> {
+    /// This method is called at the beginning of [`Xylem::convert_impl`] if `#[xylem(process)]` is
+    /// provided.
+    fn preprocess(_from: &mut <Self as Xylem<S>>::From, _context: &mut <S as Schema>::Context) -> Result<(), <S as Schema>::Error> { Ok(()) }
+
+    /// This method is called just before [`Xylem::convert_impl`] returns if `#[xylem(process)]` is
+    /// provided.
+    fn postprocess(&mut self, _context: &mut <S as Schema>::Context) -> Result<(), <S as Schema>::Error> { Ok(()) }
 }
 
 /// The schema type for a specific set of conversion rules.
