@@ -56,12 +56,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
 
     let from_ident = from_ident.unwrap_or_else(|| format_ident!("{}Xylem", &input.ident));
 
-    let vis = if expose_from_type {
-        let vis = &input.vis;
-        quote!(#vis)
-    } else {
-        quote!()
-    };
+    let vis = &input.vis;
 
     let (generics_decl, _generics_decl_bare, generics_usage, _generics_usage_bare) =
         if input.generics.params.is_empty() {

@@ -20,7 +20,7 @@ anyhow = {version = "1.0.45", optional = true}
 lazy_static = "1.4.0"
 serde = {version = "1.0.130", features = ["derive"], optional = true} # derive required in `id` and `codegen`
 typemap = {version = "0.3.3", optional = true}
-xylem-codegen = {version = "0.2.4", path = "./codegen"}
+xylem-codegen = {version = "0.2.5", path = "./codegen"}
 
 [features]
 default = ["id", "ext", "typemap", "anyhow"]

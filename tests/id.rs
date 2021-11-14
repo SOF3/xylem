@@ -6,7 +6,7 @@ declare_schema!(MySchema: SchemaExt);
 
 #[derive(Debug, Xylem)]
 #[xylem(schema = MySchema, expose = FooFrom)]
-struct Foo {
+pub struct Foo {
     #[xylem(args(new = true))]
     id:        Id<MySchema, Foo>,
     id_string: IdString<MySchema, Foo>,
