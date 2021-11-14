@@ -377,3 +377,58 @@ fn test_processable() {
         },
     );
 }
+
+#[test]
+fn test_attrs() {
+    test_ok(
+        quote! {
+            #[xylem(derive(Deserialize), serde(bound = ""))]
+            struct Foo {
+                bar: Bar,
+                #[xylem(serde(default))]
+                qux: Qux,
+            }
+        },
+        quote! {
+            #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
+            #[automatically_derived]
+            #[derive(Deserialize)]
+            #[serde(bound = "")]
+            struct FooXylem {
+                bar: <Bar as ::xylem::Xylem<crate::Schema>>::From,
+                #[serde(default)]
+                qux: <Qux as ::xylem::Xylem<crate::Schema>>::From,
+            }
+        },
+        quote! {
+            #[automatically_derived]
+            impl ::xylem::Xylem<crate::Schema> for Foo {
+                type From = FooXylem;
+                type Args = ::xylem::NoArgs;
+                fn convert_impl(
+                    mut __xylem_from: Self::From,
+                    __xylem_context: &mut <crate::Schema as ::xylem::Schema>::Context,
+                    _: &Self::Args,
+                ) -> Result<Self, <crate::Schema as ::xylem::Schema>::Error> {
+                    let mut __xylem_ret = Self {
+                        bar: {
+                            type Args = <Bar as ::xylem::Xylem<crate::Schema>>::Args;
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.bar, __xylem_context, &*__XYLEM_ARGS)?
+                        },
+                        qux: {
+                            type Args = <Qux as ::xylem::Xylem<crate::Schema>>::Args;
+                            ::xylem::lazy_static! {
+                                static ref __XYLEM_ARGS: Args = Args { ..::std::default::Default::default() };
+                            }
+                            ::xylem::Xylem::<crate::Schema>::convert(__xylem_from.qux, __xylem_context, &*__XYLEM_ARGS)?
+                        },
+                    };
+                    Ok(__xylem_ret)
+                }
+            }
+        },
+    );
+}

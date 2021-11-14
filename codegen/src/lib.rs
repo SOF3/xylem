@@ -94,6 +94,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
         #[doc = concat!("See [`", stringify!(#from_ident), "`]")]
         #[automatically_derived]
         #derive
+        #(#input_serde)*
     };
 
     let (from_decl, convert_expr) = match &input.data {
@@ -139,7 +140,6 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                     quote! {
                         Self {
                             #(
-                                #field_froms_attrs
                                 #field_convs_ident: #field_convs_expr,
                             )*
                         }
@@ -155,7 +155,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                     quote! {
                         Self (
                             #(#field_convs_expr,)*
-                             )
+                        )
                     },
                 ),
                 syn::Fields::Unit => (
