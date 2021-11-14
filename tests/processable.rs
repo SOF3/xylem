@@ -1,4 +1,4 @@
-use xylem::{DefaultContext, NoArgs, Processable, Xylem, declare_schema};
+use xylem::{declare_schema, DefaultContext, NoArgs, Processable, Xylem};
 
 declare_schema!(Schema);
 
@@ -6,7 +6,11 @@ impl Xylem<Schema> for u32 {
     type From = Self;
     type Args = NoArgs;
 
-    fn convert_impl(from: Self::From, _context: &mut DefaultContext, _args: &Self::Args) -> Result<Self, anyhow::Error> {
+    fn convert_impl(
+        from: Self::From,
+        _context: &mut DefaultContext,
+        _args: &Self::Args,
+    ) -> Result<Self, anyhow::Error> {
         Ok(from)
     }
 }
@@ -19,7 +23,10 @@ struct Foo {
 }
 
 impl Processable<Schema> for Foo {
-    fn preprocess(from: &mut Self::From, _context: &mut DefaultContext) -> Result<(), anyhow::Error> {
+    fn preprocess(
+        from: &mut Self::From,
+        _context: &mut DefaultContext,
+    ) -> Result<(), anyhow::Error> {
         from.bar += 1;
         Ok(())
     }
@@ -34,9 +41,7 @@ impl Processable<Schema> for Foo {
 #[test]
 fn test_processable() {
     let mut context = DefaultContext::default();
-    let foo_xylem = FooFrom {
-        bar: 4,
-    };
+    let foo_xylem = FooFrom { bar: 4 };
 
     let foo = Foo::convert(foo_xylem, &mut context, &NoArgs).unwrap();
     assert_eq!(foo.bar, 7);

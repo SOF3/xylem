@@ -297,11 +297,21 @@ where
 pub trait Processable<S: Schema + ?Sized>: Xylem<S> {
     /// This method is called at the beginning of [`Xylem::convert_impl`] if `#[xylem(process)]` is
     /// provided.
-    fn preprocess(_from: &mut <Self as Xylem<S>>::From, _context: &mut <S as Schema>::Context) -> Result<(), <S as Schema>::Error> { Ok(()) }
+    fn preprocess(
+        _from: &mut <Self as Xylem<S>>::From,
+        _context: &mut <S as Schema>::Context,
+    ) -> Result<(), <S as Schema>::Error> {
+        Ok(())
+    }
 
     /// This method is called just before [`Xylem::convert_impl`] returns if `#[xylem(process)]` is
     /// provided.
-    fn postprocess(&mut self, _context: &mut <S as Schema>::Context) -> Result<(), <S as Schema>::Error> { Ok(()) }
+    fn postprocess(
+        &mut self,
+        _context: &mut <S as Schema>::Context,
+    ) -> Result<(), <S as Schema>::Error> {
+        Ok(())
+    }
 }
 
 /// The schema type for a specific set of conversion rules.

@@ -300,12 +300,7 @@ impl<S: Schema, X: Identifiable<S>> fmt::Debug for IdString<S, X> {
 }
 
 impl<S: Schema, X: Identifiable<S>> Clone for IdString<S, X> {
-    fn clone(&self) -> Self {
-        Self {
-            value: self.value.clone(),
-            _ph:   PhantomData,
-        }
-    }
+    fn clone(&self) -> Self { Self { value: self.value.clone(), _ph: PhantomData } }
 }
 
 impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
