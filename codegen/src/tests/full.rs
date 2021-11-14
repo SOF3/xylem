@@ -41,6 +41,7 @@ fn test_named_struct() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
@@ -88,6 +89,7 @@ fn test_tuple_struct() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
@@ -132,6 +134,7 @@ fn test_unit_struct() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
@@ -167,6 +170,7 @@ fn test_generic_named_struct() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl<T: U, U> ::xylem::Xylem<crate::Schema> for Foo<T, U> {
                 type From = FooXylem<T, U>;
                 type Args = ::xylem::NoArgs;
@@ -214,6 +218,7 @@ fn test_generic_tuple_struct() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl<T: U, U> ::xylem::Xylem<crate::Schema> for Foo<T, U> {
                 type From = FooXylem<T, U>;
                 type Args = ::xylem::NoArgs;
@@ -275,6 +280,7 @@ fn test_enum() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
@@ -345,6 +351,7 @@ fn test_processable() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;
@@ -402,6 +409,7 @@ fn test_attrs() {
         },
         quote! {
             #[automatically_derived]
+            #[allow(clippy::needless_update)]
             impl ::xylem::Xylem<crate::Schema> for Foo {
                 type From = FooXylem;
                 type Args = ::xylem::NoArgs;

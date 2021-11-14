@@ -1,4 +1,7 @@
 //! Generates dynamically resolved identifiers.
+//!
+//! Common types are exposed at the crate level.
+//! This module provides additional low-level resource types.
 
 use core::fmt;
 use std::any::{type_name, TypeId};
@@ -7,7 +10,6 @@ use std::hash::Hash;
 use std::marker::PhantomData;
 
 use getset::{CopyGetters, Getters, MutGetters};
-
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 

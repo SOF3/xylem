@@ -224,7 +224,7 @@ pub use lazy_static::lazy_static;
 pub use xylem_codegen::Xylem;
 
 #[cfg(feature = "id")]
-mod id;
+pub mod id;
 #[cfg(feature = "id")]
 pub use id::{Id, IdArgs, IdString, Identifiable};
 #[cfg(feature = "ext")]
