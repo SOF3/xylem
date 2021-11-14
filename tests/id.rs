@@ -1,4 +1,4 @@
-use xylem::{declare_schema, DefaultContext, Id, Identifiable, NoArgs, SchemaExt, Xylem};
+use xylem::{declare_schema, DefaultContext, Id, IdString, Identifiable, NoArgs, SchemaExt, Xylem};
 
 declare_schema!(MySchema: SchemaExt);
 
@@ -8,9 +8,10 @@ declare_schema!(MySchema: SchemaExt);
 #[xylem(schema = MySchema, expose = FooFrom)]
 struct Foo {
     #[xylem(args(new = true))]
-    id:    Id<MySchema, Foo>,
-    other: Option<Id<MySchema, Foo>>,
-    bar:   Vec<Bar>,
+    id:        Id<MySchema, Foo>,
+    id_string: IdString<MySchema, Foo>,
+    other:     Option<Id<MySchema, Foo>>,
+    bar:       Vec<Bar>,
 }
 
 impl Identifiable<MySchema> for Foo {
@@ -24,30 +25,43 @@ fn test_ref() {
     let mut context = DefaultContext::default();
 
     let first = Foo::convert(
-        FooFrom { id: String::from("first"), other: None, bar: Vec::new() },
+        FooFrom {
+            id:        String::from("first"),
+            id_string: (),
+            other:     None,
+            bar:       Vec::new(),
+        },
         &mut context,
         &NoArgs,
     )
     .unwrap();
 
     assert_eq!(first.id.index(), 0);
+    assert_eq!(first.id_string.value(), "first");
     assert!(first.other.is_none());
 
     let second = Foo::convert(
-        FooFrom { id: String::from("second"), other: None, bar: Vec::new() },
+        FooFrom {
+            id:        String::from("second"),
+            id_string: (),
+            other:     None,
+            bar:       Vec::new(),
+        },
         &mut context,
         &NoArgs,
     )
     .unwrap();
 
     assert_eq!(second.id.index(), 1);
+    assert_eq!(second.id_string.value(), "second");
     assert!(second.other.is_none());
 
     let third = Foo::convert(
         FooFrom {
-            id:    String::from("third"),
-            other: Some(String::from("first")),
-            bar:   Vec::new(),
+            id:        String::from("third"),
+            id_string: (),
+            other:     Some(String::from("first")),
+            bar:       Vec::new(),
         },
         &mut context,
         &NoArgs,
@@ -55,6 +69,7 @@ fn test_ref() {
     .unwrap();
 
     assert_eq!(third.id.index(), 2);
+    assert_eq!(third.id_string.value(), "third");
     assert!(match third.other {
         Some(id) => id.index() == 0,
         None => false,
@@ -83,9 +98,10 @@ fn test_scoped_id() {
 
     let first = Foo::convert(
         FooFrom {
-            id:    String::from("first"),
-            other: None,
-            bar:   vec![
+            id:        String::from("first"),
+            id_string: (),
+            other:     None,
+            bar:       vec![
                 BarFrom { id: String::from("alpha"), other: None },
                 BarFrom { id: String::from("beta"), other: Some(String::from("alpha")) },
             ],
@@ -104,9 +120,10 @@ fn test_scoped_id() {
 
     let second_err = Foo::convert(
         FooFrom {
-            id:    String::from("second"),
-            other: None,
-            bar:   vec![BarFrom {
+            id:        String::from("second"),
+            id_string: (),
+            other:     None,
+            bar:       vec![BarFrom {
                 id:    String::from("gamma"),
                 other: Some(String::from("alpha")),
             }],

@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{AbstractError, Context, Schema, Xylem};
+use crate::{AbstractError, Context, NoArgs, Schema, Xylem};
 
 /// An identifier for type `X`.
 ///
@@ -306,7 +306,7 @@ impl<S: Schema, X: Identifiable<S>> Clone for IdString<S, X> {
 
 impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
     type From = ();
-    type Args = ();
+    type Args = NoArgs;
 
     #[inline]
     fn convert_impl(
