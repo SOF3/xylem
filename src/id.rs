@@ -6,6 +6,8 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 use std::marker::PhantomData;
 
+use getset::{CopyGetters, Getters, MutGetters};
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -338,18 +340,32 @@ impl<X: 'static> Default for IdCounter<X> {
 }
 
 /// Tracks the current ID.
-struct CurrentId {
+#[derive(Getters, CopyGetters)]
+pub struct CurrentId {
     /// The index of the current identifier.
     ///
     /// This does not use the `Id` type to avoid type parameters.
+    #[getset(get_copy = "pub")]
     id:     usize,
     /// The type ID of the parent.
+    #[getset(get_copy = "pub")]
     parent: TypeId,
     /// The original string ID.
+    #[getset(get = "pub")]
     string: String,
 }
 
-struct GlobalIdStore<S: Schema, X: Identifiable<S>> {
+/// Stores the globally tracked IDs.
+///
+/// This is a low-level implementation.
+/// Prefer using [`IdArgs`] with `track` and `import` for a more simple and stable API.
+#[derive(Getters, MutGetters)]
+pub struct GlobalIdStore<S: Schema, X: Identifiable<S>> {
+    /// The actual storage.
+    ///
+    /// The key is the ID path to the scope `X::Scope`,
+    /// and the value is a list of the IDs in that scope.
+    #[getset(get = "pub", get_mut = "pub")]
     ids: BTreeMap<Vec<usize>, Vec<String>>,
     _ph: PhantomData<&'static (S, X)>,
 }
