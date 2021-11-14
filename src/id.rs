@@ -284,6 +284,7 @@ pub struct IdArgs {
 }
 
 /// Retrieves the original string ID for an identifiable object.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct IdString<S: Schema, X: Identifiable<S>> {
     value: String,
     _ph:   PhantomData<&'static (S, X)>,
