@@ -269,6 +269,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
 
     let xylem_impl = quote! {
         #[automatically_derived]
+        #[allow(clippy::needless_update)]
         impl #generics_decl ::xylem::Xylem<#schema> for #input_ident #generics_usage {
             type From = #from_ident #generics_usage;
             type Args = ::xylem::NoArgs;
