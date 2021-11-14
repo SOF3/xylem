@@ -293,6 +293,21 @@ impl<S: Schema, X: Identifiable<S>> IdString<S, X> {
     pub fn value(&self) -> &str { &self.value }
 }
 
+impl<S: Schema, X: Identifiable<S>> fmt::Debug for IdString<S, X> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("IdString").field("value", &self.value).finish()
+    }
+}
+
+impl<S: Schema, X: Identifiable<S>> Clone for IdString<S, X> {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.clone(),
+            _ph:   PhantomData,
+        }
+    }
+}
+
 impl<S: Schema, X: Identifiable<S>> Xylem<S> for IdString<S, X> {
     type From = ();
     type Args = ();
