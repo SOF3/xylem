@@ -267,11 +267,14 @@ fn test_enum() {
             #[doc = concat!("See [`", stringify!(FooXylem), "`]")]
             #[automatically_derived]
             enum FooXylem {
+                #[doc = concat!("See [`", stringify!(Foo), "::", stringify!(Bar), "`]")]
                 Bar,
+                #[doc = concat!("See [`", stringify!(Foo), "::", stringify!(Qux), "`]")]
                 Qux(
                     <Corge as ::xylem::Xylem<crate::Schema>>::From,
                     <Quz as ::xylem::Xylem<crate::Schema>>::From,
                 ),
+                #[doc = concat!("See [`", stringify!(Foo), "::", stringify!(Grault), "`]")]
                 Grault {
                     waldo: <Waldo as ::xylem::Xylem<crate::Schema>>::From,
                     fred: <Fred as ::xylem::Xylem<crate::Schema>>::From,

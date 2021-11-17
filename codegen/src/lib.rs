@@ -210,6 +210,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 };
 
                 let variant_from = quote! {
+                    #[doc = concat!("See [`", stringify!(#input_ident), "::", stringify!(#variant_from_ident), "`]")]
                     #variant_from_ident #variant_from_fields
                 };
                 variant_froms.push(variant_from);
