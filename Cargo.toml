@@ -6,7 +6,7 @@ members = [
 
 [package]
 name = "xylem"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["SOFe <sofe2038@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -21,7 +21,7 @@ getset = "0.1.1"
 lazy_static = "1.4.0"
 serde = {version = "1.0.130", features = ["derive"], optional = true} # derive required in `id` and `codegen`
 typemap = {version = "0.3.3", optional = true}
-xylem-codegen = {version = "0.2.6", path = "./codegen"}
+xylem-codegen = {version = "0.2.7", path = "./codegen"}
 
 [features]
 default = ["id", "ext", "typemap", "anyhow"]

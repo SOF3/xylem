@@ -19,12 +19,12 @@ use crate::{AbstractError, Context, NoArgs, Schema, Xylem};
 ///
 /// The `Id` type works by ensuring
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Id<S: Schema, X: Identifiable<S>> {
+pub struct Id<S, X> {
     index: u32, // `usize` is avoided due to unclear serialization format.
-    _ph:   PhantomData<&'static (S, X)>,
+    _ph:   PhantomData<fn() -> (S, X)>,
 }
 
-impl<S: Schema, X: Identifiable<S>> Id<S, X> {
+impl<S, X> Id<S, X> {
     /// Creates a new identifier.
     pub fn new(index: usize) -> Self {
         Self { index: index.try_into().expect("Too many identifiers"), _ph: PhantomData }
@@ -39,35 +39,35 @@ impl<S: Schema, X: Identifiable<S>> Id<S, X> {
 // bounded by the type parameters `S` and `X`,
 // which are just used for type system hacks in our use case.
 
-impl<S: Schema, X: Identifiable<S>> fmt::Debug for Id<S, X> {
+impl<S, X> fmt::Debug for Id<S, X> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "Id({})", self.index) }
 }
 
-impl<S: Schema, X: Identifiable<S>> Clone for Id<S, X> {
+impl<S, X> Clone for Id<S, X> {
     fn clone(&self) -> Self { Self { index: self.index, _ph: PhantomData } }
 }
 
-impl<S: Schema, X: Identifiable<S>> Copy for Id<S, X> {}
+impl<S, X> Copy for Id<S, X> {}
 
-impl<S: Schema, X: Identifiable<S>> Default for Id<S, X> {
+impl<S, X> Default for Id<S, X> {
     fn default() -> Self { Self { index: 0, _ph: PhantomData } }
 }
 
-impl<S: Schema, X: Identifiable<S>> PartialEq for Id<S, X> {
+impl<S, X> PartialEq for Id<S, X> {
     fn eq(&self, other: &Self) -> bool { self.index == other.index }
 }
 
-impl<S: Schema, X: Identifiable<S>> Eq for Id<S, X> {}
+impl<S, X> Eq for Id<S, X> {}
 
-impl<S: Schema, X: Identifiable<S>> PartialOrd for Id<S, X> {
+impl<S, X> PartialOrd for Id<S, X> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
 }
 
-impl<S: Schema, X: Identifiable<S>> Ord for Id<S, X> {
+impl<S, X> Ord for Id<S, X> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering { self.index.cmp(&other.index) }
 }
 
-impl<S: Schema, X: Identifiable<S>> Hash for Id<S, X> {
+impl<S, X> Hash for Id<S, X> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.index.hash(state); }
 }
 
@@ -289,22 +289,22 @@ pub struct IdArgs {
 
 /// Retrieves the original string ID for an identifiable object.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct IdString<S: Schema, X: Identifiable<S>> {
+pub struct IdString<S, X> {
     value: String,
-    _ph:   PhantomData<&'static (S, X)>,
+    _ph:   PhantomData<fn() -> (S, X)>,
 }
 
-impl<S: Schema, X: Identifiable<S>> IdString<S, X> {
+impl<S, X> IdString<S, X> {
     pub fn value(&self) -> &str { &self.value }
 }
 
-impl<S: Schema, X: Identifiable<S>> fmt::Debug for IdString<S, X> {
+impl<S, X> fmt::Debug for IdString<S, X> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IdString").field("value", &self.value).finish()
     }
 }
 
-impl<S: Schema, X: Identifiable<S>> Clone for IdString<S, X> {
+impl<S, X> Clone for IdString<S, X> {
     fn clone(&self) -> Self { Self { value: self.value.clone(), _ph: PhantomData } }
 }
 
