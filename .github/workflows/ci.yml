@@ -12,6 +12,7 @@ jobs:
         with:
           toolchain: nightly
           profile: default
+          override: true
       - run: cargo +nightly fmt --all -- --check
   lint:
     name: clippy lint
@@ -32,6 +33,7 @@ jobs:
           toolchain: ${{matrix.toolchain}}
           profile: default
           default: true
+          override: true
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
@@ -56,20 +58,29 @@ jobs:
           toolchain: ${{matrix.toolchain}}
           profile: default
           default: true
+          override: true
       - name: cargo test
         run: "cargo test --all ${{matrix.stability}}"
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: default
+          default: true
       - name: cargo test
-        if: ${{ matrix.toolchain != 'nightly' || matrix.stability != '' }}
-        run: "cargo test --all ${{matrix.stability}}"
-      - name: cargo test
-        if: ${{ matrix.toolchain == 'nightly' && matrix.stability == '' }}
-        run: "cargo test --no-fail-fast --all"
+        run: "cargo test --all --no-fail-fast"
         env:
-          CARGO_INCREMENTAL: "0"
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
-          RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
       - id: coverage
         name: coverage report
-        if: ${{ matrix.toolchain == 'nightly' && matrix.stability == '' }}
         uses: actions-rs/grcov@v0.1
       - name: upload to codecov
+        uses: codecov/codecov-action@v2.1.0
+        with:
+          files: ${{ steps.coverage.outputs.report }}
