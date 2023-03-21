@@ -31,7 +31,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
     let mut processable = false;
 
     for attr in &input.attrs {
-        if attr.path.is_ident("xylem") {
+        if attr.path().is_ident("xylem") {
             let attr_list: Punctuated<InputAttr, syn::Token![,]> =
                 attr.parse_args_with(Punctuated::parse_terminated)?;
             for attr in attr_list {
@@ -69,7 +69,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
                 .iter()
                 .map(|param| match param {
                     syn::GenericParam::Type(syn::TypeParam { ident, .. }) => quote!(#ident),
-                    syn::GenericParam::Lifetime(syn::LifetimeDef { lifetime, .. }) => {
+                    syn::GenericParam::Lifetime(syn::LifetimeParam { lifetime, .. }) => {
                         quote!(#lifetime)
                     }
                     syn::GenericParam::Const(syn::ConstParam { ident, .. }) => quote!(#ident),
@@ -264,7 +264,7 @@ fn xylem_impl(ts: TokenStream) -> Result<Output> {
             )
         }
         syn::Data::Union(data) => {
-            return Err(Error::new_spanned(&data.union_token, "Unions are not supported"));
+            return Err(Error::new_spanned(data.union_token, "Unions are not supported"));
         }
     };
 
@@ -460,7 +460,7 @@ fn process_field(
     let mut from_attrs = TokenStream::new();
 
     for attr in &field.attrs {
-        if attr.path.is_ident("xylem") {
+        if attr.path().is_ident("xylem") {
             let attrs: Punctuated<FieldAttr, syn::Token![,]> =
                 attr.parse_args_with(Punctuated::parse_terminated)?;
             for attr in attrs {
