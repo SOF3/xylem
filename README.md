@@ -6,6 +6,14 @@
 [![GitHub](https://img.shields.io/github/last-commit/SOF3/xylem)](https://github.com/SOF3/xylem)
 [![GitHub](https://img.shields.io/github/stars/SOF3/xylem?style=social)](https://github.com/SOF3/xylem)
 
+> [!IMPORTANT]
+> xylem has been archived due to lack of users;
+> I am no longer using it and I don't know of anyone using it.
+> However I am happy to continue maintaining it or add joint maintainers
+> if anyone likes this idea and wants to revive the project.
+>
+> Reach out to me by [email](mailto:sofe2038@gmail.com) or on Discord `@sofe.sof3`.
+
 Xylem is a stateful type conversion framework for Rust.
 
 ## Concepts
